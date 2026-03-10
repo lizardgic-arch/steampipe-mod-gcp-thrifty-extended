@@ -57,13 +57,13 @@ control "sql_db_instance_low_connection_count" {
     select
       i.self_link as resource,
       case
-        when avg_max is null then 'error'
+        when avg_max is null then 'info'
         when avg_max = 0 then 'alarm'
         when avg_max < $1 then 'info'
         else 'ok'
       end as status,
       case
-        when avg_max is null then 'Logging metrics not available for ' || title || '.'
+        when avg_max is null then 'Connection metrics not available for ' || title || '.'
         when avg_max = 0 then title || ' has not been connected to in the last ' || days || ' days.'
         else title || ' is averaging ' || avg_max || ' max connections/day in the last ' || days || ' days.'
       end as reason
@@ -105,13 +105,13 @@ control "sql_db_instance_low_utilization" {
     select
       i.self_link as resource,
       case
-        when avg_max is null then 'error'
+        when avg_max is null then 'info'
         when avg_max <= $1 then 'alarm'
         when avg_max <= $2 then 'info'
         else 'ok'
       end as status,
       case
-        when avg_max is null then 'Logging metrics not available for ' || title || '.'
+        when avg_max is null then 'CPU utilization metrics not available for ' || title || '.'
         else title || ' is averaging ' || avg_max || '% max utilization over the last ' || days || ' days.'
       end as reason
       ${local.tag_dimensions_sql}

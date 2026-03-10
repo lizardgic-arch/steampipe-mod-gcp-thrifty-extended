@@ -89,7 +89,7 @@ Different output formats are also available, for more information please see
 
 ### Configure Variables
 
-Several benchmarks have [input variables](https://powerpipe.io/docs/build/mod-variables#input-variabless) that can be configured to better match your environment and requirements. Each variable has a default defined in its source file, e.g., `controls/sql.sp`, but these can be overwritten in several ways:
+Several benchmarks have [input variables](https://powerpipe.io/docs/build/mod-variables#input-variables) that can be configured to better match your environment and requirements. Each variable has a default defined in its source file, e.g., `controls/sql.pp`, but these can be overwritten in several ways:
 
 It's easiest to setup your vars file, starting with the sample:
 
@@ -115,7 +115,7 @@ These are only some of the ways you can set variables. For a full list, please s
 
 ### Common and Tag Dimensions
 
-The benchmark queries use common properties (like `connection_name`, `location` and `project`) and tags that are defined in the form of a default list of strings in the `variables.sp` file. These properties can be overwritten in several ways:
+The benchmark queries use common properties (like `connection_name`, `location` and `project`) and tags that are defined in the form of a default list of strings in the `variables.pp` file. These properties can be overwritten in several ways:
 
 It's easiest to setup your vars file, starting with the sample:
 
