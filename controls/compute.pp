@@ -94,7 +94,7 @@ control "compute_address_unattached" {
       gcp_compute_address;
   EOQ
 
-  tags = merge(local.storage_common_tags, {
+  tags = merge(local.compute_common_tags, {
     class = "unused"
   })
 }
@@ -252,13 +252,13 @@ control "compute_disk_unattached" {
       gcp_compute_disk;
   EOQ
 
-  tags = merge(local.storage_common_tags, {
+  tags = merge(local.compute_common_tags, {
     class = "unused"
   })
 }
 
 control "compute_instance_large" {
-  title         = "Instances with more then 32 vCPU should be reviewed"
+  title         = "Instances with more than 32 vCPU should be reviewed"
   description   = "Large compute instances are unusual, expensive and should be reviewed."
   severity      = "low"
 
@@ -266,7 +266,7 @@ control "compute_instance_large" {
     select
       self_link as resource,
       case
-        when status not in ('RUNNING', 'PROVISIONING', 'STAGING', 'REPAIRING') then 'info'
+        when status not in ('RUNNING', 'PROVISIONING', 'STAGING', 'REPAIRING') then 'skip'
         when machine_type_name like any ($1) then 'ok'
         else 'info'
       end as status,
@@ -313,7 +313,7 @@ control "compute_instance_long_running" {
     default     = var.compute_running_instance_age_max_days
   }
 
-  tags = merge(local.storage_common_tags, {
+  tags = merge(local.compute_common_tags, {
     class = "deprecated"
   })
 }
@@ -327,6 +327,8 @@ control "compute_instance_low_utilization" {
     with compute_instance_utilization as (
       select
         name,
+        project,
+        location,
         round(cast(sum(maximum) / count(maximum) as numeric), 1) as avg_max,
         count(maximum) as days
       from
@@ -334,25 +336,27 @@ control "compute_instance_low_utilization" {
       where
         date_part('day', now() - timestamp :: timestamp) <= 30
       group by
-        name
+        name,
+        project,
+        location
     )
     select
       self_link as resource,
       case
-        when avg_max is null then 'error'
+        when avg_max is null then 'info'
         when avg_max < $1 then 'alarm'
         when avg_max < $2 then 'info'
         else 'ok'
       end as status,
       case
-        when avg_max is null then 'Logging metrics not available for ' || title || '.'
+        when avg_max is null then 'CPU utilization metrics not available for ' || title || '.'
         else title || ' averaging ' || avg_max || '% max utilization over the last ' || days || ' days.'
       end as reason
       ${local.tag_dimensions_sql}
       ${local.common_dimensions_sql}
     from
       gcp_compute_instance as i
-      left join compute_instance_utilization as u on u.name = i.name;
+      left join compute_instance_utilization as u on u.name = i.name and u.project = i.project and u.location = i.location;
   EOQ
 
   param "compute_instance_avg_cpu_utilization_low" {
